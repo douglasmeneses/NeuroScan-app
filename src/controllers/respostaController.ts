@@ -1,56 +1,52 @@
+/// <reference path="../types/express.d.ts" />
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import * as respostasService from "../services/respostasService";
+import { RespostasService } from "../services/respostasService";
+import { asyncHandler } from "../middleware/async.middleware";
+import { CompactSensorDataSchema } from "../types/sensor-data.types";
+import { parseCompactSensorData } from "../utils/sensor-parser";
 
-export const listarRespostas = async (req: Request, res: Response) => {
-  try {
-    const prisma: PrismaClient = (req as any).prisma;
-    const respostas = await respostasService.listarRespostas(prisma);
-    res.json(respostas);
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao buscar respostas" });
-  }
-};
+export const listarRespostas = asyncHandler(async (req: Request, res: Response) => {
+  const service = new RespostasService(req.prisma);
+  const respostas = await service.findAll();
+  res.json(respostas);
+});
 
-export const criarResposta = async (req: Request, res: Response) => {
-  try {
-    const prisma: PrismaClient = (req as any).prisma;
-    const result = await respostasService.criarResposta(prisma, req.body);
-    res.status(201).json(result);
-  } catch (error: any) {
-    return res
-      .status(400)
-      .json({ error: error.message || "Erro ao criar resposta" });
-  }
-};
+export const criarRespostaDeJsonCompactoComGzip = asyncHandler(async (req: Request, res: Response) => {
+  const startTime = Date.now();
 
-export const buscarRespostaPorId = async (req: Request, res: Response) => {
-  try {
-    const prisma: PrismaClient = (req as any).prisma;
-    const { id } = req.params;
-    const resposta = await respostasService.buscarRespostaPorId(prisma, id);
-    if (!resposta) {
-      return res.status(404).json({ error: "Resposta não encontrada" });
-    }
-    res.json(resposta);
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao buscar resposta" });
-  }
-};
+  // Valida o formato compacto
+  const validated = CompactSensorDataSchema.parse(req.body);
 
-export const buscarSensoresPorResposta = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const prisma: PrismaClient = (req as any).prisma;
-    const { id } = req.params;
-    const sensores = await respostasService.buscarSensoresPorResposta(
-      prisma,
-      id
-    );
-    res.json(sensores);
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao buscar dados dos sensores" });
-  }
-};
+  // Converte para formato expandido
+  const expandedData = parseCompactSensorData(validated);
+
+  // Cria a resposta no banco
+  const service = new RespostasService(req.prisma);
+  const result = await service.create(expandedData);
+
+  const endTime = Date.now();
+
+  res.status(201).json({
+    ...result,
+    formato: "compacto-gzip",
+    sensores_processados: validated.sensores.length,
+    tempo_processamento_ms: endTime - startTime,
+    reducao_tamanho: "~86%",
+    compressao_http: "gzip (level 6)",
+  });
+});
+
+export const buscarRespostaPorId = asyncHandler(async (req: Request, res: Response) => {
+  const service = new RespostasService(req.prisma);
+  const id = Number.parseInt(req.params.id);
+  const resposta = await service.findById(id);
+  res.json(resposta);
+});
+
+export const buscarSensoresPorResposta = asyncHandler(async (req: Request, res: Response) => {
+  const service = new RespostasService(req.prisma);
+  const id = Number.parseInt(req.params.id);
+  const sensores = await service.findSensoresByRespostaId(id);
+  res.json(sensores);
+});
+

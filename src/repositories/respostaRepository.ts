@@ -19,7 +19,17 @@ export class RespostaRepository {
     });
   }
 
-  async create(data: any) {
+  async create(data: {
+    usuario_id: number;
+    pergunta_id: number;
+    resposta: string;
+    duracao: number;
+    idle: number;
+    quantidade_cliques: number;
+    quantidade_passos: number;
+    dh_inicio: Date;
+    dh_fim: Date;
+  }) {
     return this.prisma.resposta.create({ data });
   }
 

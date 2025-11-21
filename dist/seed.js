@@ -91,8 +91,8 @@ async function main() {
     //           idle,
     //           quantidade_cliques: cliques,
     //           quantidade_passos: passos,
-    //           dh_inicio: inicioResposta,
-    //           dh_fim: new Date(inicioResposta.getTime() + duracao),
+    //           dh_inicio: new Date(inicioResposta.toISOString()),
+    //           dh_fim: new Date(new Date(inicioResposta.getTime() + duracao).toISOString()),
     //         },
     //       });
     //       // Criar coletas de dados dos sensores (a cada 100ms durante a resposta)
@@ -126,6 +126,20 @@ async function main() {
     //       }
     //     }
     //   }
+    // Exemplo de criação de resposta com datas ISO
+    await prisma.resposta.create({
+        data: {
+            usuario_id: 1,
+            pergunta_id: 1,
+            resposta: "Exemplo de resposta",
+            duracao: 1000,
+            idle: 200,
+            quantidade_cliques: 3,
+            quantidade_passos: 10,
+            dh_inicio: new Date("2025-06-10T21:56:08.000Z"), // Use Date object
+            dh_fim: new Date("2025-06-10T21:56:13.000Z"), // Use Date object
+        },
+    });
     console.log("Seed concluído com sucesso!");
 }
 main()

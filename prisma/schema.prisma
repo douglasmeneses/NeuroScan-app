@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model Questionario {
@@ -22,7 +21,7 @@ model Pergunta {
   numero         Int
   questionario_id Int
   texto          String
-  questionario   Questionario  @relation(fields: [questionario_id], references: [id])
+  questionario   Questionario  @relation(fields: [questionario_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   respostas      Resposta[]
   
   @@map("perguntas")
@@ -48,8 +47,8 @@ model Resposta {
   quantidade_passos   Int
   dh_inicio           DateTime @db.Timestamptz(6)
   dh_fim              DateTime @db.Timestamptz(6)
-  pergunta            Pergunta  @relation(fields: [pergunta_id], references: [id])
-  usuario             Usuario   @relation(fields: [usuario_id], references: [id])
+  pergunta            Pergunta  @relation(fields: [pergunta_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario             Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   coletas             Coleta[]
   
   @@map("respostas")
@@ -59,7 +58,7 @@ model Coleta {
   id           Int            @id @default(autoincrement())
   resposta_id  Int
   timestamp    DateTime @db.Timestamptz(6)
-  resposta     Resposta       @relation(fields: [resposta_id], references: [id])
+  resposta     Resposta       @relation(fields: [resposta_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   acelerometro Acelerometro?
   giroscopio   Giroscopio?
   
@@ -72,7 +71,7 @@ model Acelerometro {
   eixo_x    Float
   eixo_y    Float
   eixo_z    Float
-  coleta    Coleta @relation(fields: [coleta_id], references: [id])
+  coleta    Coleta @relation(fields: [coleta_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
   @@map("acelerometros")
 }
@@ -83,7 +82,7 @@ model Giroscopio {
   eixo_x    Float
   eixo_y    Float
   eixo_z    Float
-  coleta    Coleta @relation(fields: [coleta_id], references: [id])
+  coleta    Coleta @relation(fields: [coleta_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
   @@map("giroscopios")
 }
