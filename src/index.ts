@@ -7,6 +7,7 @@ import { connectDatabase, disconnectDatabase } from "./config/database";
 import { swaggerSpec } from "./config/swagger";
 import { prismaMiddleware } from "./middleware/prisma.middleware";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
+import { requestLogger } from "./middleware/logger.middleware";
 
 import questionarioRoutes from "./routes/questionarios";
 import usuarioRoutes from "./routes/usuarios";
@@ -28,6 +29,9 @@ app.use(compression({
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Middleware de logging para todas as requisições
+app.use(requestLogger);
 
 // Middleware do Prisma
 app.use(prismaMiddleware);
