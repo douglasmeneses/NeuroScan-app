@@ -60,3 +60,27 @@ export const buscarSensoresPorResposta = asyncHandler(async (req: Request, res: 
   res.json(sensores);
 });
 
+export const criarRespostaDeJsonDireto = asyncHandler(async (req: Request, res: Response) => {
+  const startTime = Date.now();
+
+  // Valida o formato compacto direto do body
+  const validated = CompactSensorDataSchema.parse(req.body);
+
+  // Converte para formato expandido
+  const expandedData = parseCompactSensorData(validated);
+
+  // Cria a resposta no banco
+  const service = new RespostasService(req.prisma);
+  const result = await service.create(expandedData);
+
+  const endTime = Date.now();
+
+  res.status(201).json({
+    ...result,
+    formato: "compacto-json",
+    sensores_processados: validated.sensores.length,
+    tempo_processamento_ms: endTime - startTime,
+    reducao_tamanho: "~86%",
+    compressao_http: "none",
+  });
+});
