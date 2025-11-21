@@ -1,5 +1,7 @@
 /// <reference path="../types/express.d.ts" />
 import { Request, Response } from "express";
+import { decompressAndParseJson } from "../utils/gzip.util";
+import { AppError } from "../middleware/error.middleware";
 import { RespostasService } from "../services/respostasService";
 import { asyncHandler } from "../middleware/async.middleware";
 import { CompactSensorDataSchema } from "../types/sensor-data.types";
@@ -14,8 +16,16 @@ export const listarRespostas = asyncHandler(async (req: Request, res: Response) 
 export const criarRespostaDeJsonCompactoComGzip = asyncHandler(async (req: Request, res: Response) => {
   const startTime = Date.now();
 
+  // Verifica se veio arquivo .gz
+  if (!req.file?.buffer) {
+    throw new AppError("Arquivo .gz não enviado", 400);
+  }
+
+  // Descompacta e faz parse do JSON
+  const jsonData = await decompressAndParseJson(req.file.buffer);
+
   // Valida o formato compacto
-  const validated = CompactSensorDataSchema.parse(req.body);
+  const validated = CompactSensorDataSchema.parse(jsonData);
 
   // Converte para formato expandido
   const expandedData = parseCompactSensorData(validated);
