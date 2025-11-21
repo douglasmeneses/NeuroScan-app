@@ -22,10 +22,15 @@ export const requestLogger = (
     contentLength: req.get("content-length"),
   };
 
-  // Log da requisição recebida
+  // Log da requisição recebida com payload
   console.log(
     `📥 [${requestInfo.timestamp}] ${requestInfo.method} ${requestInfo.path} | IP: ${requestInfo.ip}`
   );
+
+  // Log do payload/body se existir
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log(`📦 Payload:`, JSON.stringify(req.body, null, 2));
+  }
 
   // Captura a resposta quando finalizar
   res.on("finish", () => {
@@ -49,7 +54,7 @@ export const requestLogger = (
 
     // Log detalhado para uploads e grandes payloads
     if (requestInfo.contentLength) {
-      const sizeKB = (parseInt(requestInfo.contentLength) / 1024).toFixed(2);
+      const sizeKB = (Number.parseInt(requestInfo.contentLength) / 1024).toFixed(2);
       console.log(
         `📊 Payload recebido: ${sizeKB}KB | ContentType: ${requestInfo.contentType} | Tempo: ${duration}ms`
       );
