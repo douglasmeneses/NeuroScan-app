@@ -15,7 +15,7 @@ const options: swaggerJsdoc.Options = {
     servers: [
       {
         url: process.env.NODE_ENV === "production" 
-          ? "https://neuroscan-api.onrender.com"
+          ? "https://neuroscan-app.onrender.com"
           : "http://localhost:3001",
         description: process.env.NODE_ENV === "production" ? "Servidor de Produção" : "Servidor de Desenvolvimento"
       }
