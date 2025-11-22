@@ -14,12 +14,10 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: "http://localhost:3001",
-        description: "Servidor de Desenvolvimento"
-      },
-      {
-        url: "https://api.neuroscan.com",
-        description: "Servidor de Produção"
+        url: process.env.NODE_ENV === "production" 
+          ? "https://neuroscan-api.onrender.com"
+          : "http://localhost:3001",
+        description: process.env.NODE_ENV === "production" ? "Servidor de Produção" : "Servidor de Desenvolvimento"
       }
     ],
     tags: [
