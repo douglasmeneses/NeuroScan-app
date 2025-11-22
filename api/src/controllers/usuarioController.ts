@@ -19,7 +19,7 @@ export const buscarUsuarioPorId = asyncHandler(async (req: Request, res: Respons
 export const criarUsuario = asyncHandler(async (req: Request, res: Response) => {
   const service = new UsuariosService(req.prisma);
   const usuario = await service.create(req.body);
-  res.status(201).json(usuario);
+  res.status(201).json({ id: usuario.id });
 });
 
 export const atualizarUsuario = asyncHandler(async (req: Request, res: Response) => {
