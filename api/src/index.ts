@@ -93,7 +93,7 @@ app.use("/api/questionarios", questionarioRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/respostas", respostaRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/gonogos", gonogoRoutes);
+app.use("/api/gonogo", gonogoRoutes);
 
 // Tratamento de rotas não encontradas
 app.use(notFoundHandler);

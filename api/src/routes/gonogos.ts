@@ -86,7 +86,7 @@ router.get("/:id", buscarGonogoPorId);
 
 /**
  * @openapi
- * /api/gonogos:
+ * /api/gonogo:
  *   post:
  *     tags:
  *       - GoNogo
