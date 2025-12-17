@@ -47,6 +47,7 @@ model Usuario {
   created_at                      DateTime   @default(now()) @db.Timestamptz(6)
   updated_at                      DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
   respostas                       Resposta[]
+  gonogos                         GoNogo[]
   
   @@map("usuarios")
 }
@@ -100,5 +101,21 @@ model Giroscopio {
   coleta    Coleta @relation(fields: [coleta_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
   @@map("giroscopios")
+}
+
+model GoNogo {
+  id                              Int       @id @default(autoincrement())
+  usuario_id                      Int
+  erros_comissao_percentual       Float
+  erros_omissao_percentual        Float
+  acerto_go_percentual            Float
+  tempo_medio_reacao_ms           Float
+  variabilidade_rt_ms             Float
+  latencia_media_nogo_erro        Float
+  created_at                      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                      DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  usuario                         Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  @@map("gonogos")
 }
 

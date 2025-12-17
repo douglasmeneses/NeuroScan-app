@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
 
 const ffmqQuestionsText = [
     "Quando estou caminhando, eu deliberadamente percebo as sensações do meu corpo em movimento.",
@@ -43,7 +42,7 @@ const ffmqQuestionsText = [
     "Eu me reprovo quando tenho ideias irracionais."
 ];
 
-async function main() {
+export async function seedFfmq(prisma: PrismaClient) {
   // Cria o questionário FFMQ
   const questionnaire = await prisma.questionario.create({
     data: {
@@ -58,14 +57,5 @@ async function main() {
     },
     include: { perguntas: true },
   });
-  console.log("Questionário FFMQ criado:", questionnaire);
+  console.log("✅ Questionário FFMQ criado:", questionnaire.nome);
 }
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });

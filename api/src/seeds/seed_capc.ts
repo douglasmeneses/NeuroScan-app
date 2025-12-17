@@ -1,7 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
 const questionsText = [
     "Eu consigo soluções para problemas através dos meus sonhos.",
     "Olhar para um problema de um ângulo diferente pode levar a uma solução.",
@@ -27,15 +25,7 @@ const questionsText = [
     "Posso perder completamente a noção do tempo se trabalho intensivamente."
 ];
 
-async function main() {
-  // Cria usuário
-  const usuario = await prisma.usuario.create({
-    data: {
-      iniciais_do_nome: 'CAP',
-      idade: 30,
-    },
-  });
-
+export async function seedCapc(prisma: PrismaClient) {
   // Cria questionário CAPC
   const questionario = await prisma.questionario.create({
     data: {
@@ -53,15 +43,5 @@ async function main() {
     },
   });
 
-  console.log('Usuário criado:', usuario);
-  console.log('Questionário CAPC criado:', questionario);
+  console.log('✅ Questionário CAPC criado:', questionario.nome);
 }
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });

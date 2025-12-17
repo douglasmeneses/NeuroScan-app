@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
 
 const dassQuestionsText = [
     "Achei difícil me acalmar?",
@@ -25,7 +24,7 @@ const dassQuestionsText = [
     "Senti que a vida não tinha sentido."
 ];
 
-async function main() {
+export async function seedDass21(prisma: PrismaClient) {
   // Cria o questionário DASS21
   const questionnaire = await prisma.questionario.create({
     data: {
@@ -40,14 +39,5 @@ async function main() {
     },
     include: { perguntas: true },
   });
-  console.log("Questionário DASS21 criado:", questionnaire);
+  console.log("✅ Questionário DASS21 criado:", questionnaire.nome);
 }
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });

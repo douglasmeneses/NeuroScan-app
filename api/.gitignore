@@ -1,7 +1,5 @@
 # Dependencies
 node_modules/
-api/node_modules/
-frontend/node_modules/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
@@ -34,16 +32,12 @@ lerna-debug.log*
 .DS_Store
 
 # Prisma
-api/prisma/*.db
-api/prisma/*.db-journal
+prisma/*.db
+prisma/*.db-journal
 
 # Testing
 coverage/
 .nyc_output/
-
-# Next.js
-frontend/.next/
-frontend/out/
 
 # Misc
 .cache/
