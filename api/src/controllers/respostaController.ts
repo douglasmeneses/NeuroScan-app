@@ -7,80 +7,92 @@ import { asyncHandler } from "../middleware/async.middleware";
 import { CompactSensorDataSchema } from "../types/sensor-data.types";
 import { parseCompactSensorData } from "../utils/sensor-parser";
 
-export const listarRespostas = asyncHandler(async (req: Request, res: Response) => {
-  const service = new RespostasService(req.prisma);
-  const respostas = await service.findAll();
-  res.json(respostas);
-});
+export const listarRespostas = asyncHandler(
+  async (req: Request, res: Response) => {
+    const service = new RespostasService(req.prisma);
+    const respostas = await service.findAll();
+    res.json(respostas);
+  },
+);
 
-export const criarRespostaDeJsonCompactoComGzip = asyncHandler(async (req: Request, res: Response) => {
-  const startTime = Date.now();
+export const criarRespostaDeJsonCompactoComGzip = asyncHandler(
+  async (req: Request, res: Response) => {
+    const startTime = Date.now();
 
-  // Verifica se veio arquivo .gz
-  if (!req.file?.buffer) {
-    throw new AppError("Arquivo .gz não enviado", 400);
-  }
+    // Verifica se veio arquivo .gz
+    if (!req.file?.buffer) {
+      throw new AppError("Arquivo .gz não enviado", 400);
+    }
 
-  // Descompacta e faz parse do JSON
-  const jsonData = await decompressAndParseJson(req.file.buffer);
+    // Descompacta e faz parse do JSON
+    const jsonData = await decompressAndParseJson(req.file.buffer);
 
-  // Valida o formato compacto
-  const validated = CompactSensorDataSchema.parse(jsonData);
+    // Valida o formato compacto
+    const validated = CompactSensorDataSchema.parse(jsonData);
 
-  // Converte para formato expandido
-  const expandedData = parseCompactSensorData(validated);
+    // Converte para formato expandido
+    const expandedData = parseCompactSensorData(validated);
 
-  // Cria a resposta no banco
-  const service = new RespostasService(req.prisma);
-  const result = await service.create(expandedData);
+    // Cria a resposta no banco
+    const service = new RespostasService(req.prisma);
+    const result = await service.create(expandedData);
 
-  const endTime = Date.now();
+    const endTime = Date.now();
 
-  res.status(201).json({
-    ...result,
-    formato: "compacto-gzip",
-    sensores_processados: validated.sensores.length,
-    tempo_processamento_ms: endTime - startTime,
-    reducao_tamanho: "~86%",
-    compressao_http: "gzip (level 6)",
-  });
-});
+    res.status(201).json({
+      ...result,
+      formato: "compacto-gzip",
+      sensores_processados: validated.sensores.length,
+      tempo_processamento_ms: endTime - startTime,
+      reducao_tamanho: "~86%",
+      compressao_http: "gzip (level 6)",
+    });
+  },
+);
 
-export const buscarRespostaPorId = asyncHandler(async (req: Request, res: Response) => {
-  const service = new RespostasService(req.prisma);
-  const id = Number.parseInt(req.params.id);
-  const resposta = await service.findById(id);
-  res.json(resposta);
-});
+export const buscarRespostaPorId = asyncHandler(
+  async (req: Request, res: Response) => {
+    const service = new RespostasService(req.prisma);
+    const idParam = req.params.id;
+    const id = Number.parseInt(Array.isArray(idParam) ? idParam[0] : idParam);
+    const resposta = await service.findById(id);
+    res.json(resposta);
+  },
+);
 
-export const buscarSensoresPorResposta = asyncHandler(async (req: Request, res: Response) => {
-  const service = new RespostasService(req.prisma);
-  const id = Number.parseInt(req.params.id);
-  const sensores = await service.findSensoresByRespostaId(id);
-  res.json(sensores);
-});
+export const buscarSensoresPorResposta = asyncHandler(
+  async (req: Request, res: Response) => {
+    const service = new RespostasService(req.prisma);
+    const idParam = req.params.id;
+    const id = Number.parseInt(Array.isArray(idParam) ? idParam[0] : idParam);
+    const sensores = await service.findSensoresByRespostaId(id);
+    res.json(sensores);
+  },
+);
 
-export const criarRespostaDeJsonDireto = asyncHandler(async (req: Request, res: Response) => {
-  const startTime = Date.now();
+export const criarRespostaDeJsonDireto = asyncHandler(
+  async (req: Request, res: Response) => {
+    const startTime = Date.now();
 
-  // Valida o formato compacto direto do body
-  const validated = CompactSensorDataSchema.parse(req.body);
+    // Valida o formato compacto direto do body
+    const validated = CompactSensorDataSchema.parse(req.body);
 
-  // Converte para formato expandido
-  const expandedData = parseCompactSensorData(validated);
+    // Converte para formato expandido
+    const expandedData = parseCompactSensorData(validated);
 
-  // Cria a resposta no banco
-  const service = new RespostasService(req.prisma);
-  const result = await service.create(expandedData);
+    // Cria a resposta no banco
+    const service = new RespostasService(req.prisma);
+    const result = await service.create(expandedData);
 
-  const endTime = Date.now();
+    const endTime = Date.now();
 
-  res.status(201).json({
-    ...result,
-    formato: "compacto-json",
-    sensores_processados: validated.sensores.length,
-    tempo_processamento_ms: endTime - startTime,
-    reducao_tamanho: "~86%",
-    compressao_http: "none",
-  });
-});
+    res.status(201).json({
+      ...result,
+      formato: "compacto-json",
+      sensores_processados: validated.sensores.length,
+      tempo_processamento_ms: endTime - startTime,
+      reducao_tamanho: "~86%",
+      compressao_http: "none",
+    });
+  },
+);

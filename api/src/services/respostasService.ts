@@ -68,12 +68,12 @@ export class RespostasService {
     // Processar sensores usando SQL RAW puro para máxima performance
     if (dados_sensores && dados_sensores.length > 0) {
       const prisma = this.respostaRepo["prisma"];
-      
+
       await prisma.$transaction(
-        async (tx) => {
+        async (tx: any) => {
           // OTIMIZAÇÃO 1: Inserir todas as coletas, acelerômetros e giroscópios em uma única query composta
           // Isso reduz drasticamente o número de round-trips ao banco
-          
+
           // Preparar valores para inserção em lote
           const coletaValues: string[] = [];
           const coletaParams: any[] = [];
@@ -86,14 +86,14 @@ export class RespostasService {
           }
 
           // Inserir todas as coletas de uma vez e obter IDs
-          const coletasResult = await tx.$queryRawUnsafe<{ id: number }[]>(
+          const coletasResult = (await tx.$queryRawUnsafe(
             `INSERT INTO coletas (resposta_id, timestamp) 
              VALUES ${coletaValues.join(", ")} 
              RETURNING id`,
-            ...coletaParams
-          );
+            ...coletaParams,
+          )) as { id: number }[];
 
-          const coletasIds = coletasResult.map((row) => row.id);
+          const coletasIds = coletasResult.map((row: any) => row.id);
 
           // OTIMIZAÇÃO 2: Inserir acelerômetros e giroscópios em paralelo usando SQL RAW
           const insertPromises: Promise<any>[] = [];
@@ -106,12 +106,14 @@ export class RespostasService {
           for (let i = 0; i < dados_sensores.length; i++) {
             const sensor = dados_sensores[i];
             if (sensor.acelerometro) {
-              accelValues.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`);
+              accelValues.push(
+                `($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`,
+              );
               accelParams.push(
                 coletasIds[i],
                 sensor.acelerometro.eixo_x,
                 sensor.acelerometro.eixo_y,
-                sensor.acelerometro.eixo_z
+                sensor.acelerometro.eixo_z,
               );
               paramIndex += 4;
             }
@@ -122,8 +124,8 @@ export class RespostasService {
               tx.$queryRawUnsafe(
                 `INSERT INTO acelerometros (coleta_id, eixo_x, eixo_y, eixo_z) 
                  VALUES ${accelValues.join(", ")}`,
-                ...accelParams
-              )
+                ...accelParams,
+              ),
             );
           }
 
@@ -135,12 +137,14 @@ export class RespostasService {
           for (let i = 0; i < dados_sensores.length; i++) {
             const sensor = dados_sensores[i];
             if (sensor.giroscopio) {
-              gyroValues.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`);
+              gyroValues.push(
+                `($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`,
+              );
               gyroParams.push(
                 coletasIds[i],
                 sensor.giroscopio.eixo_x,
                 sensor.giroscopio.eixo_y,
-                sensor.giroscopio.eixo_z
+                sensor.giroscopio.eixo_z,
               );
               paramIndex += 4;
             }
@@ -151,8 +155,8 @@ export class RespostasService {
               tx.$queryRawUnsafe(
                 `INSERT INTO giroscopios (coleta_id, eixo_x, eixo_y, eixo_z) 
                  VALUES ${gyroValues.join(", ")}`,
-                ...gyroParams
-              )
+                ...gyroParams,
+              ),
             );
           }
 
@@ -162,9 +166,9 @@ export class RespostasService {
           sensoresProcessados = dados_sensores.length;
         },
         {
-          maxWait: 5000,  // Reduzido para 5 segundos
+          maxWait: 5000, // Reduzido para 5 segundos
           timeout: 15000, // Reduzido para 15 segundos
-        }
+        },
       );
     }
 
